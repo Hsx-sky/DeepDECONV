@@ -72,6 +72,59 @@ scikit-learn
 
 Additional packages may be required only for optional benchmarking or plotting scripts.
 
+## Running a test prediction
+
+After installing the dependencies and placing the pretrained model in the `Model/` folder, run:
+
+### Windows PowerShell
+
+```powershell
+python Scripts\predict_public.py `
+  --input examples\example_RNA_signals.npy `
+  --model Model\deepdeconv_model.pth `
+  --output results\example_test
+```
+
+### macOS or Linux
+
+```bash
+python Scripts/predict_public.py \
+  --input examples/example_RNA_signals.npy \
+  --model Model/deepdeconv_model.pth \
+  --output results/example_test
+```
+
+The output folder will be created automatically.
+
+## Output files
+
+After prediction, the output directory should contain files such as:
+
+```text
+results/example_test/
+├── polII_ini.npy
+├── polII_contri.npy
+├── RNA_input.npy
+├── RNA_reconstructed.npy
+└── DeepDECONV_prediction.mat
+```
+
+### Output descriptions
+
+| File | Description |
+|---|---|
+| `polII_ini.npy` | Inferred transcription initiation event series. |
+| `polII_contri.npy` | Inferred single-RNAP contribution functions. |
+| `RNA_input.npy` | Normalized RNA fluorescence traces used as model input. |
+| `RNA_reconstructed.npy` | RNA signals reconstructed from the inferred initiation events and contribution functions. |
+| `DeepDECONV_prediction.mat` | MATLAB-compatible output file containing the main prediction results. |
+
+For each input trace, DeepDECONV predicts:
+
+1. the transcription initiation event series;
+2. the single-RNAP contribution function;
+3. the reconstructed RNA fluorescence trajectory.
+
 ## Input data format
 
 The current public version uses NumPy `.npy` input files.
@@ -131,93 +184,10 @@ Model/
 └── deepdeconv_model.pth
 ```
 
-If the model weight file is not included in this repository because of file-size limits, please download it from the link provided below and place it in the `Model/` folder before running prediction:
-
-```text
-[MODEL_DOWNLOAD_LINK_OR_ZENODO_DOI]
-```
-
 The model architecture and model parameters should match the settings in:
 
 ```text
 transformer_ModelParaSet.py
-```
-
-## Running a test prediction
-
-After installing the dependencies and placing the pretrained model in the `Model/` folder, run:
-
-### Windows PowerShell
-
-```powershell
-python Scripts\predict_public.py `
-  --input examples\example_RNA_signals.npy `
-  --model Model\deepdeconv_model.pth `
-  --output results\example_test
-```
-
-### macOS or Linux
-
-```bash
-python Scripts/predict_public.py \
-  --input examples/example_RNA_signals.npy \
-  --model Model/deepdeconv_model.pth \
-  --output results/example_test
-```
-
-The output folder will be created automatically.
-
-## Output files
-
-After prediction, the output directory should contain files such as:
-
-```text
-results/example_test/
-├── polII_ini.npy
-├── polII_contri.npy
-├── RNA_input.npy
-├── RNA_reconstructed.npy
-└── DeepDECONV_prediction.mat
-```
-
-### Output descriptions
-
-| File | Description |
-|---|---|
-| `polII_ini.npy` | Inferred transcription initiation event series. |
-| `polII_contri.npy` | Inferred single-RNAP contribution functions. |
-| `RNA_input.npy` | Normalized RNA fluorescence traces used as model input. |
-| `RNA_reconstructed.npy` | RNA signals reconstructed from the inferred initiation events and contribution functions. |
-| `DeepDECONV_prediction.mat` | MATLAB-compatible output file containing the main prediction results. |
-
-For each input trace, DeepDECONV predicts:
-
-1. the transcription initiation event series;
-2. the single-RNAP contribution function;
-3. the reconstructed RNA fluorescence trajectory.
-
-## Generating example data
-
-If the repository includes an example-data generation script, it can be run as:
-
-```bash
-python Scripts/generate_example_data.py
-```
-
-This script generates a small `.npy` dictionary containing example RNA fluorescence traces. The generated file should be saved in:
-
-```text
-examples/example_RNA_signals.npy
-```
-
-The expected format is:
-
-```python
-{
-    "example_trace_00": np.ndarray of shape [N, 1],
-    "example_trace_01": np.ndarray of shape [N, 1],
-    ...
-}
 ```
 
 ## Using custom data
@@ -256,15 +226,6 @@ python Scripts\predict_public.py `
   --output results\my_prediction
 ```
 
-## Notes on input normalization
-
-The prediction script normalizes each RNA fluorescence trajectory before feeding it into the model. Therefore, the input values can be raw fluorescence intensities, but each trace should satisfy the following basic requirements:
-
-- the signal should be numerical;
-- missing values should be removed or interpolated before prediction;
-- each dictionary value should have shape `[N, 1]`;
-- traces with all-zero values are not informative and should be excluded.
-
 ## Training
 
 This first public release focuses on prediction using pretrained models. Training scripts may be included for reference, but full model training may require additional simulated datasets, parameter settings and computational resources.
@@ -272,7 +233,7 @@ This first public release focuses on prediction using pretrained models. Trainin
 A typical training command may look like:
 
 ```bash
-python Scripts/train_public.py
+python Scripts/RNA_signal_translation2head_regClassify_train.py
 ```
 
 Before training, please check:
