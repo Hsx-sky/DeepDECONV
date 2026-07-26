@@ -79,19 +79,21 @@ After installing the dependencies and placing the pretrained model in the `Model
 ### Windows PowerShell
 
 ```powershell
-python Scripts\predict_public.py `
+python Scripts\DeepDeconv_predict.py `
   --input examples\example_RNA_signals.npy `
-  --model Model\deepdeconv_model.pth `
-  --output results\example_test
+  --model Model\DeepDeconv_len256.pth `
+  --output results\example_test `
+  --plot
 ```
 
 ### macOS or Linux
 
 ```bash
-python Scripts/predict_public.py \
+python Scripts/DeepDeconv_predict.py \
   --input examples/example_RNA_signals.npy \
-  --model Model/deepdeconv_model.pth \
-  --output results/example_test
+  --model Model/DeepDeconv_len256.pth \
+  --output results/example_test \
+  --plot
 ```
 
 The output folder will be created automatically.
@@ -211,7 +213,7 @@ where each `trace_xxx` is a one-dimensional RNA fluorescence trajectory with len
 Then run:
 
 ```bash
-python Scripts/predict_public.py \
+python Scripts/DeepDeconv_predict.py \
   --input my_RNA_signals.npy \
   --model Model/deepdeconv_model.pth \
   --output results/my_prediction
@@ -220,7 +222,7 @@ python Scripts/predict_public.py \
 On Windows PowerShell:
 
 ```powershell
-python Scripts\predict_public.py `
+python Scripts\DeepDeconv_predict.py `
   --input my_RNA_signals.npy `
   --model Model\deepdeconv_model.pth `
   --output results\my_prediction
