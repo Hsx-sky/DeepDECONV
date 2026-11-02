@@ -1,4 +1,3 @@
-[DeepDECONV_README_publish.md](https://github.com/user-attachments/files/34278479/DeepDECONV_README_publish.md)
 # DeepDECONV
 
 DeepDECONV is a Transformer-based deconvolution framework for inferring transcription initiation events and single-RNA-polymerase signal contribution functions from live-imaging nascent RNA fluorescence trajectories.
