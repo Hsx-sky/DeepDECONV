@@ -1,3 +1,4 @@
+[README.md](https://github.com/user-attachments/files/34277920/README.md)
 # DeepDECONV
 
 DeepDECONV is a Transformer-based deconvolution framework for inferring transcription initiation events and single-RNA-polymerase signal contribution functions from live-imaging nascent RNA fluorescence trajectories.
@@ -30,7 +31,7 @@ On Windows PowerShell:
 
 ```powershell
 python -m venv venv
-venv\Scripts\activate
+.\venv\Scripts\Activate.ps1
 ```
 
 On macOS or Linux:
@@ -47,17 +48,13 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-The repository was prepared using a PyCharm virtual environment. The exact package versions used in the original environment are listed in:
+The reference implementation was tested in a PyCharm-managed Python virtual environment. Install the published dependencies from `requirements.txt`. This file uses **minimum-version constraints** (for example, `torch>=2.0`) rather than exact version pins, so it is **not a lockfile**. The package versions of the successfully tested environment are recorded below. A separate `requirements-lock.txt` is **not provided** in this release.
 
-```text
-requirements-lock.txt
-```
+To record the exact installed packages in your own tested environment, you can run `python -m pip freeze > requirements-lock.txt`. Note that PyTorch/CUDA builds may also depend on the platform and package index; consult the [official PyTorch installation guide](https://pytorch.org/get-started/locally/) if a compatible installation is needed.
 
-For general use, `requirements.txt` is recommended. For exact reproduction of the original local environment, use `requirements-lock.txt`.
+## Software dependencies and tested versions
 
-## Minimal requirements
-
-The main dependencies are:
+The following package versions were recorded in the successful test environment. They describe the **tested configuration**, not the minimum versions required on all systems:
 
 | Package | Version |
 |---------|---------|
@@ -97,7 +94,7 @@ python Scripts/DeepDeconv_predict.py \
   --plot
 ```
 
-The output folder will be created automatically.
+The output folder will be created automatically. By default, `--device auto` selects CUDA when available and otherwise uses the CPU; specify `--device cuda` or `--device cpu` to choose explicitly.
 
 ## Output files
 
@@ -109,7 +106,8 @@ results/example_test/
 ├── polII_contri.npy
 ├── RNA_input.npy
 ├── RNA_reconstructed.npy
-└── DeepDECONV_prediction.mat
+├── DeepDECONV_prediction.mat
+└── example_trace_XX_prediction.png  # one per trace, with --plot
 ```
 
 ### Output descriptions
@@ -121,12 +119,26 @@ results/example_test/
 | `RNA_input.npy` | Normalized RNA fluorescence traces used as model input. |
 | `RNA_reconstructed.npy` | RNA signals reconstructed from the inferred initiation events and contribution functions. |
 | `DeepDECONV_prediction.mat` | MATLAB-compatible output file containing the main prediction results. |
+| `*_prediction.png` | Visualization of the input and reconstructed RNA signal, predicted initiation series, and single-RNAP contribution function (created with `--plot`). |
 
 For each input trace, DeepDECONV predicts:
 
 1. the transcription initiation event series;
 2. the single-RNAP contribution function;
 3. the reconstructed RNA fluorescence trajectory.
+
+To check that all 10 example traces were processed, run this from the repository root after prediction:
+
+```python
+import numpy as np
+
+results = np.load("results/example_test/polII_ini.npy", allow_pickle=True).item()
+print("Number of example traces:", len(results))
+for name, initiation in results.items():
+    print(name, initiation.shape)
+```
+
+The example should contain **10 dictionary entries**. Each initiation series is stored as an array with one time dimension and one trace column. Only load `.npy` dictionary files from trusted sources because their loading requires `allow_pickle=True`.
 
 ## Input data format
 
@@ -184,7 +196,7 @@ Example:
 
 ```text
 Model/
-└── deepdeconv_model.pth
+└── DeepDeconv_len256.pth
 ```
 
 The model architecture and model parameters should match the settings in:
@@ -216,7 +228,7 @@ Then run:
 ```bash
 python Scripts/DeepDeconv_predict.py \
   --input my_RNA_signals.npy \
-  --model Model/deepdeconv_model.pth \
+  --model Model/DeepDeconv_len256.pth \
   --output results/my_prediction
 ```
 
@@ -225,7 +237,7 @@ On Windows PowerShell:
 ```powershell
 python Scripts\DeepDeconv_predict.py `
   --input my_RNA_signals.npy `
-  --model Model\deepdeconv_model.pth `
+  --model Model\DeepDeconv_len256.pth `
   --output results\my_prediction
 ```
 
@@ -233,11 +245,13 @@ python Scripts\DeepDeconv_predict.py `
 
 This first public release focuses on prediction using pretrained models. Training scripts may be included for reference, but full model training may require additional simulated datasets, parameter settings and computational resources.
 
-A typical training command may look like:
+A training script is included for reference:
 
-```bash
-python Scripts/RNA_signal_translation2head_regClassify_train.py
+```text
+Scripts/RNA_signal_translation2head_regClassify_train.py
 ```
+
+**Note:** This initial public release has been validated for example **inference**. Reproducing the complete training workflow may require additional training data, configuration, and path adjustments; the training script is not presented as a one-command reproduction of all manuscript results.
 
 Before training, please check:
 
@@ -246,3 +260,65 @@ transformer_ModelParaSet.py
 ```
 
 and make sure that the model length, input encoding, output encoding and training settings match the intended configuration.
+
+## Tested environment and computational requirements
+
+DeepDECONV has been tested in a Python virtual environment managed using PyCharm on the following workstation:
+
+| Component | Tested configuration |
+|---|---|
+| Operating system | Microsoft Windows 10 Enterprise, version 22H2 (OS build 19045.6456), 64-bit |
+| Processor | AMD Ryzen Threadripper PRO 3995WX, 64 physical cores / 128 logical processors |
+| Memory (RAM) | 511.8 GB (approximately 512 GB) |
+| Graphics processor | NVIDIA GeForce RTX 3090 (CUDA-enabled GPU used for the reported demo timing) |
+| Python | 3.12.3 |
+| PyTorch | 2.3.1+cu121 |
+| NumPy | 2.2.6 |
+| SciPy | 1.14.0 |
+| Matplotlib | 3.9.1 |
+| tqdm | 4.66.4 |
+| pandas | 2.2.2 |
+| openpyxl | 3.1.5 |
+| scikit-learn | 1.5.0 |
+
+No non-standard hardware is required for CPU inference; a dedicated NVIDIA GPU is **not mandatory**. CPU inference is supported, and CUDA acceleration is optional. The 64-core CPU and 512 GB RAM above are **not minimum requirements**. The recorded demo timing below was obtained **on the NVIDIA GeForce RTX 3090 GPU**. Windows is the verified operating system; macOS/Linux commands are included for convenience but were not independently tested.
+
+### Installation time
+
+The estimated time to create a virtual environment and install the Python dependencies is approximately **10–30 minutes** on a typical desktop computer with a stable internet connection. This estimate is **not an independently measured installation benchmark**; actual time may vary with download speed, available PyTorch wheels, and whether CUDA packages are installed. No separate software compilation is needed for the standard installation procedure.
+
+### Demo runtime and expected results
+
+The example dataset contains **10 simulated nascent RNA fluorescence trajectories**, each stored in the `.npy` dictionary format described above. The measured runtime for processing all 10 example trajectories was approximately **300 seconds (5 minutes) using the NVIDIA GeForce RTX 3090 GPU** on the workstation specified above. This is a **GPU measurement**, not a CPU benchmark. Runtime on CPUs, other GPUs, or machines with different hardware may differ substantially.
+
+The demo produces the predicted polymerase initiation series, single-RNAP contribution functions, reconstructed RNA fluorescence trajectories, and optional visualizations when `--plot` is specified. The outputs are saved to the directory given by `--output`, including `.npy` files, a MATLAB-compatible `.mat` file, and per-trace `.png` plots when plotting is enabled. The `.npy` output files contain Python dictionaries keyed by trace name.
+
+To request CPU inference explicitly, use `--device cpu`; to request CUDA on a compatible machine, use `--device cuda`. CPU execution has been confirmed to work, although its runtime has not been benchmarked separately here.
+
+### Explicit CPU or GPU execution
+
+The example command above selects the execution device automatically. Use one of the following options to explicitly choose a device:
+
+```powershell
+# Use the NVIDIA GPU when CUDA is available
+python Scripts\DeepDeconv_predict.py `
+  --input examples\example_RNA_signals.npy `
+  --model Model\DeepDeconv_len256.pth `
+  --output results\gpu_test `
+  --device cuda `
+  --plot
+
+# Use the CPU (no NVIDIA GPU required)
+python Scripts\DeepDeconv_predict.py `
+  --input examples\example_RNA_signals.npy `
+  --model Model\DeepDeconv_len256.pth `
+  --output results\cpu_test `
+  --device cpu `
+  --plot
+```
+
+The current demo confirms that inference can be executed and its outputs inspected; it does **not** by itself reproduce every quantitative result in the associated manuscript.
+
+## Licensing
+
+As of this release, the repository does not specify a software license in a `LICENSE` file. Public availability of the source code does not by itself grant permission for redistribution or adaptation. Please contact the repository maintainers with licensing or reuse questions.
