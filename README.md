@@ -60,14 +60,14 @@ For general use, `requirements.txt` is recommended. For exact reproduction of th
 The main dependencies are:
 
 ```text
-numpy
-scipy
-matplotlib
-torch
-tqdm
-pandas
-openpyxl
-scikit-learn
+numpy 2.2.6
+scipy 1.14.0
+matplotlib 3.9.1
+torch 2.3.1+cu121
+tqdm 4.66.4
+pandas 	2.2.2
+openpyxl 	3.1.5
+scikit-learn 	1.5.0
 ```
 
 Additional packages may be required only for optional benchmarking or plotting scripts.
